@@ -1,0 +1,73 @@
+{
+  "name": "component-from-stream-redux",
+  "version": "0.1.0",
+  "description": "tiny (< 0.3kB) redux- and redux-observable-like middleware for component-from-stream",
+  "main": "dist/index.min.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "predist": "mkdirp dist && rimraf dist/*",
+    "dist": "tsc -p src --outDir dist",
+    "symbol-observable-polyfill": "browserify -r symbol-observable --standalone symbol-observable -g uglifyify -p bundle-collapser/plugin -p [ common-shakeify -v ] | uglifyjs -c -m > example/symbol-observable.js",
+    "postdist": "npm run uglify",
+    "example": "npm run example:bundle && npm run symbol-observable-polyfill && npm run example:serve",
+    "example:serve": "http-server -c-1 -i -e html -o -p 6510 example",
+    "preexample:bundle": "rimraf spec/example/*.js",
+    "example:bundle": "browserify example/index.tsx -p [ tsify --project example ] -g uglifyify -p bundle-collapser/plugin -p [ common-shakeify -v ] | uglifyjs -c -m > example/index.js",
+    "prepublish": "npm run dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "uglify": "uglifyjs dist/index.js -c -m toplevel -o dist/index.min.js"
+  },
+  "keywords": [
+    "recompose",
+    "observable",
+    "stream",
+    "react",
+    "preact",
+    "inferno",
+    "redux",
+    "reducer",
+    "redux-observable",
+    "epic",
+    "effect",
+    "stateless"
+  ],
+  "author": {
+    "name": "Stephane M. Catala",
+    "email": "stephane@zenyway.com"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenyway/component-from-stream-redux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zenyway/component-from-stream-redux/issues"
+  },
+  "homepage": "https://github.com/zenyway/component-from-stream-redux#readme",
+  "devDependencies": {
+    "@types/es6-promise": "^3.3.0",
+    "basic-compose": "^4.0.1",
+    "basic-cursors": "^2.1.0",
+    "browserify": "^16.2.2",
+    "bundle-collapser": "^1.3.0",
+    "clipboard-copy": "^2.0.0",
+    "common-shakeify": "^0.4.6",
+    "component-from-stream": "^0.12.2",
+    "http-server": "^0.11.1",
+    "inferno": "^5.0.6",
+    "inferno-create-element": "^5.0.6",
+    "rimraf": "^2.6.2",
+    "rxjs": "^6.1.0",
+    "symbol-observable": "^1.2.0",
+    "tsify": "^4.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3",
+    "uglifyify": "^5.0.0"
+  },
+  "peerDependencies": {
+    "component-from-stream": "^0.12.0"
+  },
+  "dependencies": {
+    "rx-subject": "^3.0.2"
+  }
+}
