@@ -28,7 +28,8 @@ export default function <S,A={}>(
   ...effects: Effect<S,A>[]
 ): Middleware<S> {
   return function <Q extends Subscribable<S>>(
-    dispatch: (state: S) => void,
+    next: (state: S) => void,
+    dispatch: (event: A) => void,
     _state$: Q,
     fromES: <T, O extends Subscribable<T>>(stream: Subscribable<T>) => O,
     toES: <T, O extends Subscribable<T>>(stream: O) => Subscribable<T>
@@ -41,8 +42,7 @@ export default function <S,A={}>(
     const state$ = fromES(_state$)
     const subs = effects.reduce(
       function(subs, effect) {
-        const effect$ = toES(effect(event$, state$))
-        return subs.concat(effect$.subscribe(events.sink.next))
+        return subs.concat(toES(effect(event$, state$)).subscribe(dispatch))
       },
       // events must first be pushed to reducer, before effects
       [events.source$.subscribe(reduce)]
@@ -52,7 +52,7 @@ export default function <S,A={}>(
 
     function reduce(event: A): void {
       const update = reducer(state, event)
-      if (update !== state) { dispatch(update) }
+      if (update !== state) { next(update) }
     }
 
     function end(): void {

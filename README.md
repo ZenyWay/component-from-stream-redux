@@ -11,7 +11,7 @@ or [`MOST`](https://www.npmjs.com/package/most).
 # Example
 see the full [example](./example/index.tsx) in this directory.
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.1.0/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.2.0/example/index.html).
 
 ```ts
 // TODO
