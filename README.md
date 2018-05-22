@@ -1,7 +1,7 @@
-# tiny (< 0.3kB) redux- and redux-observable-like middleware for component-from-stream
+# tiny (0.3kB) redux- and redux-observable-like middleware for component-from-stream
 [![NPM](https://nodei.co/npm/component-from-stream-redux.png?compact=true)](https://nodei.co/npm/component-from-stream-redux/)
 
-tiny (< 0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
+tiny (0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
 [redux-observable](https://npmjs.com/package/redux-observable)-like
 middleware for [component-from-stream](https://npmjs.com/package/component-from-stream). <br/>
 compatible with observable libraries such as [`RxJS`](http://reactivex.io/rxjs/)
@@ -11,7 +11,7 @@ or [`MOST`](https://www.npmjs.com/package/most).
 # Example
 see the full [example](./example/index.tsx) in this directory.
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.2.0/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.3.0/example/index.html).
 
 ```ts
 // TODO
@@ -24,7 +24,8 @@ import { Reducer, Middleware } from "component-from-stream"
 export { Subscribable, Reducer, Middleware }
 
 export default function <S, A = {}>(
-  reducer: Reducer<S, A>, ...effects: Effect<S, A>[]
+  reducer: Reducer<S, A>,
+  ...effects: Effect<S, A>[]
 ): Middleware<S>
 
 export declare type Effect<S, A> =

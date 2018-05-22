@@ -30,36 +30,36 @@ export default function <S,A={}>(
   return function <Q extends Subscribable<S>>(
     next: (state: S) => void,
     dispatch: (event: A) => void,
-    _state$: Q,
+    source$: Q,
     fromES: <T, O extends Subscribable<T>>(stream: Subscribable<T>) => O,
     toES: <T, O extends Subscribable<T>>(stream: O) => Subscribable<T>
   ): (event: A) => void {
-    // state variable must be updated first, before update is pushed to effects
     let state: S
-    _state$.subscribe(function(s) { state = s }, end, end)
+    const states = createSubject<S>()
     const events = createSubject<A>()
+    // before events are pushed to effects,
+    // they must first reduce state and state be pushed downstream,
+    states.source$.subscribe(next, nop, unsubscribe)
+    events.source$.subscribe(reduce, nop, states.sink.complete)
+    source$.subscribe(nop, nop, events.sink.complete)
+    // event and state updates are pushed last to effects
+    const state$ = fromES(states.source$)
     const event$ = fromES(events.source$)
-    const state$ = fromES(_state$)
-    const subs = effects.reduce(
-      function(subs, effect) {
-        return subs.concat(toES(effect(event$, state$)).subscribe(dispatch))
-      },
-      // events must first be pushed to reducer, before effects
-      [events.source$.subscribe(reduce)]
-    )
+    const subs = effects.map(function(effect) {
+      return toES(effect(event$, state$)).subscribe(dispatch)
+    })
 
     return events.sink.next
 
     function reduce(event: A): void {
       const update = reducer(state, event)
-      if (update !== state) { next(update) }
+      if (update !== state) { states.sink.next(state = update) }
     }
 
-    function end(): void {
-      events.sink.complete()
-      while (subs.length) {
-        subs.pop().unsubscribe()
-      }
+    function unsubscribe(): void {
+      while (subs.length) { subs.pop().unsubscribe() }
     }
   }
 }
+
+function nop() {}
