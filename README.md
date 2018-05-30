@@ -1,4 +1,4 @@
-# tiny (0.3kB) redux- and redux-observable-like middleware for component-from-stream
+# tiny (0.3kB) redux- and redux-observable-like operator for component-from-stream
 [![NPM](https://nodei.co/npm/component-from-stream-redux.png?compact=true)](https://nodei.co/npm/component-from-stream-redux/)
 
 tiny (0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
@@ -11,7 +11,7 @@ or [`MOST`](https://www.npmjs.com/package/most).
 # Example
 see the full [example](./example/index.tsx) in this directory.
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.3.0/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.4.0/example/index.html).
 
 ```ts
 // TODO
@@ -20,20 +20,23 @@ or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.3
 # <a name="API"></a>API
 ```ts
 import { Subscribable } from 'rx-subject'
-import { Reducer, Middleware } from "component-from-stream"
-export { Subscribable, Reducer, Middleware }
+import { Reducer, DispatchOperator } from "component-from-stream"
+export { Subscribable, Reducer, DispatchOperator }
 
-export default function <S, A = {}>(
+export declare type Effect<S, A> = <
+  E extends Subscribable<A> = Subscribable<A>,
+  Q extends Subscribable<S> = Subscribable<S>
+>(action$: E, state$?: Q) => E
+
+export default function <
+  S = {},
+  A = {},
+  Q extends Subscribable<S> = Subscribable<S>,
+  E extends Subscribable<A> = Subscribable<A>
+>(
   reducer: Reducer<S, A>,
   ...effects: Effect<S, A>[]
-): Middleware<S>
-
-export declare type Effect<S, A> =
-<E extends Subscribable<A>, Q extends Subscribable<S> = Subscribable<any>>(
-  action$: E,
-  state$?: Q
-) => E
-
+): DispatchOperator<A, A, S, E, Q>
 ```
 
 # `Symbol.observable`
