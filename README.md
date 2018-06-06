@@ -3,30 +3,30 @@
 
 tiny (0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
 [redux-observable](https://npmjs.com/package/redux-observable)-like
-middleware for [component-from-stream](https://npmjs.com/package/component-from-stream). <br/>
+operator for [component-from-stream](https://npmjs.com/package/component-from-stream). <br/>
 compatible with observable libraries such as [`RxJS`](http://reactivex.io/rxjs/)
 or [`MOST`](https://www.npmjs.com/package/most).
 
-<!--
 # Example
+<!--
 see the full [example](./example/index.tsx) in this directory.
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.4.0/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.0/example/index.html).
 
+-->
 ```ts
 // TODO
 ```
--->
 # <a name="API"></a>API
 ```ts
 import { Subscribable } from 'rx-subject'
-import { Reducer, DispatchOperator } from "component-from-stream"
-export { Subscribable, Reducer, DispatchOperator }
+import { Reducer, OperatorFactory } from "component-from-stream"
+export { Subscribable, Reducer }
 
 export declare type Effect<S, A> = <
   E extends Subscribable<A> = Subscribable<A>,
   Q extends Subscribable<S> = Subscribable<S>
->(action$: E, state$?: Q) => E
+>(event$: E, state$?: Q) => E
 
 export default function <
   S = {},
@@ -36,7 +36,7 @@ export default function <
 >(
   reducer: Reducer<S, A>,
   ...effects: Effect<S, A>[]
-): DispatchOperator<A, A, S, E, Q>
+): OperatorFactory<A, A, S, E, Q>
 ```
 
 # `Symbol.observable`

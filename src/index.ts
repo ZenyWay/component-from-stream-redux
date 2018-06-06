@@ -14,49 +14,52 @@
  */
 ;
 import createSubject, { Subject, Subscribable } from 'rx-subject'
-import { Reducer, DispatchOperator, StreamableDispatcher } from "component-from-stream"
-export { Subscribable, Reducer, DispatchOperator }
+import { Reducer, OperatorFactory, StreamableDispatcher } from "component-from-stream"
+export { Subscribable, Reducer }
 
-export type Effect<S,A> = <
+export type Effect<
+  S={},
+  A={},
   E extends Subscribable<A> = Subscribable<A>,
   Q extends Subscribable<S> = Subscribable<S>
->(action$: E, state$?: Q) => E
+> = (action$: E, state$?: Q) => E
 
 export default function <
   S={},
   A={},
   Q extends Subscribable<S> = Subscribable<S>,
   E extends Subscribable<A> = Subscribable<A>
->(reducer: Reducer<S,A>, ...effects: Effect<S,A>[]): DispatchOperator<A,A,S,E,Q> {
+>(reducer: Reducer<S,A>, ...effects: Effect<S,A>[]): OperatorFactory<A,A,S,E,Q> {
   return function (
-    source$: E,
     dispatch: StreamableDispatcher<A>,
     fromES: <T, O extends Subscribable<T>>(stream: Subscribable<T>) => O,
     toES: <T, O extends Subscribable<T>>(stream: O) => Subscribable<T>
-  ): Q {
-		let state: S
-		const states = createSubject<S>()
-		const state$: Q = fromES(states.source$)
-		const newSubject = source$ !== dispatch.source$ // new Subject to share event$
-    const events = newSubject ? createSubject<A>() : dispatch
-    const event$ = newSubject ? fromES(events.source$) : events.source$
-		events.source$.subscribe(reduce) // no need to unsubscribe this
-		if (newSubject) {
-			const { unsubscribe } = source$.subscribe((<Subject<A>>events).sink)
-			dispatch.source$.subscribe(nop, unsubscribe, unsubscribe) // no need to unsubscribe this
-		}
-		for (const effect of effects) {
-			dispatch.from(effect(event$, state$))
-		}
-		return state$
+  ): (source$: E) => Q {
+    return function (source$: E): Q {
+      let state: S
+      const states = createSubject<S>()
+      const state$: Q = fromES(states.source$)
+      const newSubject = source$ !== dispatch.source$ // new Subject to share event$
+      const events = newSubject ? createSubject<A>() : dispatch
+      const event$ = newSubject ? fromES(events.source$) : events.source$
+      events.source$.subscribe(reduce) // no need to unsubscribe this
+      if (newSubject) {
+        const { unsubscribe } = source$.subscribe((<Subject<A>>events).sink)
+        dispatch.source$.subscribe(nop, unsubscribe, unsubscribe) // no need to unsubscribe this
+      }
+      for (const effect of effects) {
+        dispatch.from(effect(event$, state$))
+      }
+      return state$
 
-		function reduce (event: A) {
-			const update = reducer(state, event)
-			if (update !== state) {
-				states.sink.next((state = update))
-			}
-		}
-	}
+      function reduce (event: A) {
+        const update = reducer(state, event)
+        if (update !== state) {
+          states.sink.next((state = update))
+        }
+      }
+    }
+  }
 }
 
 function nop() {}
