@@ -1,0 +1,30 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "types": [
+			"inferno"
+    ],
+		"jsx": "react",
+		"jsxFactory": "createElement",
+    "declaration": true,
+    "sourceMap": true,
+    "noEmitHelpers": false,
+    "importHelpers": true,
+    "experimentalDecorators": false,
+    "removeComments": false,
+    "noImplicitAny": false
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "spec",
+    "typings"
+  ]
+}

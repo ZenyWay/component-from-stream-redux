@@ -1,6 +1,6 @@
 {
   "name": "component-from-stream-redux",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "tiny (0.3kB) redux- and redux-observable-like middleware for component-from-stream",
   "main": "dist/index.min.js",
   "typings": "dist/index.d.ts",
