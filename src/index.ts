@@ -62,4 +62,20 @@ export default function <
   }
 }
 
+export function connect <S={},P={}>(
+  mapStateToProps: (state: S) => Partial<P>,
+  mapDispatchToProps: (dispatch: (...args: any[]) => void) => Partial<P>,
+  mergeProps = shallowMerge as (stateProps: Partial<P>, dispatchProps: Partial<P>) => P
+) {
+  return function ({ next }: StreamableDispatcher<any,any>) {
+    const props = mapDispatchToProps(next)
+    return function(state: S): P {
+      return mergeProps(mapStateToProps(state), props)
+    }
+  }
+}
+
+function shallowMerge <O>(...args: Partial<O>[]): O {
+  return Object.assign({} as any, ...args)
+}
 function nop() {}
