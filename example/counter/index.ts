@@ -14,7 +14,8 @@
  */
 ;
 import redux from '../../'
-import componentFromStream, { connect } from '../component-from-stream'
+import connect from '../connect'
+import componentFromStream from '../component-from-stream'
 import Counter from '../views/counter'
 import reducer from './reducer'
 import { createEventHandlers, createEventFactory } from '../event-handlers'

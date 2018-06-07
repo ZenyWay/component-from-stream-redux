@@ -3,20 +3,33 @@
 
 tiny (0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
 [redux-observable](https://npmjs.com/package/redux-observable)-like
-operator for [component-from-stream](https://npmjs.com/package/component-from-stream). <br/>
+operator factory for
+[component-from-stream](https://npmjs.com/package/component-from-stream). <br/>
 compatible with observable libraries such as [`RxJS`](http://reactivex.io/rxjs/)
 or [`MOST`](https://www.npmjs.com/package/most).
 
 # Example
 see the full [example](./example/index.tsx) in this directory.<br/>
 run the example in your browser locally with `"npm run example"`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.2/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.3/example/index.html).
 
-the [`component-from-stream` example](https://github.com/acdlite/recompose/blob/master/docs/API.md#componentfromstream)
+the [example from the `component-from-stream` module](https://npmjs.com/package/component-from-stream) explores how to refactor
+the [original `component-from-stream` example](https://github.com/acdlite/recompose/blob/master/docs/API.md#componentfromstream)
 from [`recompose`](https://npmjs.com/package/recompose)
-can be refactored to implement a redux-like setup as follows:
+to split view rendering from reactive operator behaviour.
+although it is arguably overkill in this particular example,
+it can be further refactored to implement a redux-like setup
+for the purpose of illustration.
 
-`counter/index.ts`
+components react to events which alter their internal state
+and sometimes generate external side-effects.
+a `redux`/`redux-observable` architecture is naturally well adapted
+for implementing components with such behaviour,
+and often brings a number of benefits,
+among which simpler testing and maintainability.
+
+## `counter/index.ts`
+the main module of the `counter` component, which essentially wires it up.
 ```ts
 import redux from 'component-from-stream-redux'
 import componentFromStream from '../component-from-stream'
@@ -46,8 +59,20 @@ export default componentFromStream(
   () => tap(log('view-props:'))
 )
 ```
+note that only `mapStateToProps` and `mapDispatchToProps` are specific
+to the `counter` component.
+both functions are projections that map the reducer state or dispatcher function
+to view props.
+the rest of the code is generic wiring,
+and could be abstracted into its own module.
 
-`counter/reducer.ts`
+## `counter/reducer.ts`
+the reducer is the heart of the redux-based component:
+it reacts to incoming events and reduces state accordingly.
+
+the reducer is assembled from pure (stateless) functions in a functional way.
+it is itself also a pure function,
+and should typically be straightforward to test and maintain.
 ```ts
 import { propCursor } from 'basic-cursors'
 import { shallowEqual } from '../utils'
@@ -79,37 +104,22 @@ export default function (state = { count: 0 }, event) {
   return !reducer ? state : reducer(state, payload)
 }
 ```
-
 note that instead of returning a new object with equal properties,
 the reducer returns the original object.
 in that case, the redux operator will not re-emit the previously emitted state,
 which limits view rendering to only when state changes.
 
-the `component-from-stream` factory is instantiated in a project's flavour,
-i.e. rendering and observable frameworks,
-from the higher-level factory exposed by the
-[component-from-stream](https://npmjs.com/package/component-from-stream) module.
-it may be instantiated and exposed by a central project-specific module:
-
-`component-from-stream.ts`
-```ts
-import createComponentFromStreamFactory from 'component-from-stream'
-import { Component } from 'inferno'
-import { from } from 'rxjs'
-
-export default createComponentFromStreamFactory(Component, from)
-```
-
-finally, the `component-from-stream-redux` module also exposes
+## `connect.ts`
+in addition to the `redux` operator factory used in
+the main module of the `counter` component,
+the `component-from-stream-redux` module also exposes
 a higher-level `connect` factory, very similar in purpose to
 [its source of inspiration from the `react-redux` module](https://github.com/reduxjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options).
 the higher-level factory returns a function which,
 when composed as follows with a `map` operator yields
-an operator for the `component-from-stream` factory.
+an operator factory for the `component-from-stream` factory.
 
 as for the latter, a project-specific module may expose a corresponding shorthand:
-
-`connect.ts`
 ```ts
 import { map } from 'rxjs/operators'
 import compose from 'basic-compose'
@@ -133,10 +143,11 @@ which transform the state and event streams into a stream of events
 that is dispatched back into the reducer.
 as for `epics`, events from the input event stream first hit the reducer
 before the effects.
-* `connect` accept an optional 3rd argument, that defines how to merge
-the output of the `mapStateToProps` and `mapDispatchToProps` functions
+`epics` are typically meant to handle side-effects external to the component.
+* `connect` accepts an optional 3rd argument, `mergeProps`, that defines how to
+merge the output of the `mapStateToProps` and `mapDispatchToProps` functions
 into a new view props object.<br/>
-when not specified, both outputs are shallow-merged:
+when not specified, both outputs are shallow-merged as follows:<br/>
 `{ ...stateProps, ...dispatchProps }`
 ```ts
 import { Subscribable } from 'rx-subject'

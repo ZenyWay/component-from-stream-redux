@@ -15,39 +15,16 @@
 ;
 import createComponentFromStreamFactory, {
   Operator as GenericOperator,
-  OperatorFactory as GenericOperatorFactory,
-  StreamableDispatcher
+  OperatorFactory as GenericOperatorFactory
 } from 'component-from-stream'
 import { Component } from 'inferno'
 import { Observable, from } from 'rxjs'
-import { map } from 'rxjs/operators'
-import compose from 'basic-compose'
 
 export type Operator<I={},O=I> = GenericOperator<I,O,Observable<I>,Observable<O>>
 export type OperatorFactory<A=void,I={},O=I> =
   GenericOperatorFactory<A,I,O,Observable<I>,Observable<O>>
 
 export default createComponentFromStreamFactory(Component, from)
-
-export function connect <S={},P={}>(
-  mapStateToProps: (state: S) => Partial<P>,
-  mapDispatchToProps: (dispatch: (...args: any[]) => void) => Partial<P>
-): OperatorFactory<any,S,P> {
-  return compose.into(0)(map, _connect(mapStateToProps, mapDispatchToProps))
-}
-
-// TODO move to redux module
-function _connect <S={},P={}>(
-  mapStateToProps: (state: S) => Partial<P>,
-  mapDispatchToProps: (dispatch: (...args: any[]) => void) => Partial<P>
-) {
-  return function ({ next }: StreamableDispatcher<any>) {
-    const props = mapDispatchToProps(next)
-    return function(state: S) {
-      return { ...(<object>props), ...(<object>mapStateToProps(state)) } as P
-    }
-  }
-}
 
 export function pipe <I,O>(...operators: Operator<any,any>[]): Operator<I,O> {
   return function (q$: Observable<I>): Observable<O> {
