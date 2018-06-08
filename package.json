@@ -1,6 +1,6 @@
 {
   "name": "component-from-stream-redux",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "tiny (0.3kB) redux- and redux-observable-like middleware for component-from-stream",
   "main": "dist/index.min.js",
   "typings": "dist/index.d.ts",
@@ -49,6 +49,7 @@
     "automata-reducer": "^2.0.2",
     "basic-compose": "^4.0.1",
     "basic-cursors": "^2.2.0",
+    "basic-fsa-factories": "^1.0.0",
     "browserify": "^16.2.2",
     "bundle-collapser": "^1.3.0",
     "clipboard-copy": "^2.0.0",

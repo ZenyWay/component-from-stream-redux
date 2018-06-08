@@ -18,7 +18,7 @@ import connect from '../connect'
 import componentFromStream from '../component-from-stream'
 import Counter from '../views/counter'
 import reducer from './reducer'
-import { createEventHandlers, createEventFactory } from '../event-handlers'
+import { createActionDispatchers, createActionFactory } from 'basic-fsa-factories'
 import { tap } from 'rxjs/operators'
 import log from '../console'
 
@@ -26,14 +26,14 @@ function mapStateToProps ({ props, count }) {
   return { ...props, count }
 }
 
-const mapDispatchToProps = createEventHandlers({
+const mapDispatchToProps = createActionDispatchers({
   onClickIncrement: 'CLICK_INCREMENT',
   onClickDecrement: 'CLICK_DECREMENT'
 })
 
 export default componentFromStream(
   Counter,
-  createEventFactory('PROPS'),
+  createActionFactory('PROPS'),
   redux(reducer),
   () => tap(log('state:')),
   connect(mapStateToProps, mapDispatchToProps),

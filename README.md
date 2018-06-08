@@ -11,7 +11,7 @@ or [`MOST`](https://www.npmjs.com/package/most).
 # Example
 see the full [example](./example/index.tsx) in this directory.<br/>
 run the example in your browser locally with `"npm run example"`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.3/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.4/example/index.html).
 
 the [example from the `component-from-stream` module](https://npmjs.com/package/component-from-stream) explores how to refactor
 the [original `component-from-stream` example](https://github.com/acdlite/recompose/blob/master/docs/API.md#componentfromstream)
