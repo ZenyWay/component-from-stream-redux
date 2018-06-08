@@ -1,4 +1,4 @@
-# tiny (0.3kB) redux- and redux-observable-like operator for component-from-stream
+# tiny (0.3kB) redux- and redux-observable-like operator factory for component-from-stream
 [![NPM](https://nodei.co/npm/component-from-stream-redux.png?compact=true)](https://nodei.co/npm/component-from-stream-redux/)
 
 tiny (0.3kB gzip) [redux](https://npmjs.com/package/redux)- and
@@ -36,7 +36,7 @@ import componentFromStream from '../component-from-stream'
 import connect from '../connect'
 import Counter from '../views/counter'
 import reducer from './reducer'
-import { createEventHandlers, createEventFactory } from '../event-handlers'
+import { createEventHandlers, createEventFactory } from 'basic-fsa-factories'
 import { map, tap } from 'rxjs/operators'
 import compose from 'basic-compose'
 import log from '../console'
@@ -104,10 +104,12 @@ export default function (state = { count: 0 }, event) {
   return !reducer ? state : reducer(state, payload)
 }
 ```
-note that instead of returning a new object with equal properties,
-the reducer returns the original object.
-in that case, the redux operator will not re-emit the previously emitted state,
-which limits view rendering to only when state changes.
+note that when the state is not modified by an event,
+the reducer returns the previous state object
+instead of returning a new object representing the same state.
+since the redux operator does not re-emit the previously emitted state,
+the event is "swallowed":
+the view is only re-rendered when the state changes.
 
 ## `connect.ts`
 in addition to the `redux` operator factory used in
