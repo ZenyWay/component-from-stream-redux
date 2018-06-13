@@ -13,12 +13,10 @@
  * Limitations under the License.
  */
 ;
-import redux from '../../'
-import connect from '../connect'
-import componentFromStream from '../component-from-stream'
+import componentFromEvents, { redux, connect } from '../component-from-events'
 import Counter from '../views/counter'
 import reducer from './reducer'
-import { createActionDispatchers, createActionFactory } from 'basic-fsa-factories'
+import { createActionDispatchers } from 'basic-fsa-factories'
 import { tap } from 'rxjs/operators'
 import log from '../console'
 
@@ -31,9 +29,8 @@ const mapDispatchToProps = createActionDispatchers({
   onClickDecrement: 'CLICK_DECREMENT'
 })
 
-export default componentFromStream(
+export default componentFromEvents(
   Counter,
-  createActionFactory('PROPS'),
   redux(reducer),
   () => tap(log('state:')),
   connect(mapStateToProps, mapDispatchToProps),

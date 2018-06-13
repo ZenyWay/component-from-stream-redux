@@ -13,14 +13,30 @@
  * Limitations under the License.
  */
 ;
-import { connect } from '../'
-import { OperatorFactory } from './component-from-stream'
+import redux, { connect as _connect } from '../'
+import componentFromStream, { OperatorFactory, InfernoChildren } from './component-from-stream'
 import { map } from 'rxjs/operators'
+import { createActionFactory, StandardAction } from 'basic-fsa-factories'
 import compose from 'basic-compose'
 
-export default function <S={},P={}>(
+export { redux }
+
+export function connect <S={},P={}>(
   mapStateToProps: (state: S) => Partial<P>,
   mapDispatchToProps: (dispatch: (...args: any[]) => void) => Partial<P>
 ): OperatorFactory<any,S,P> {
-  return compose.into(0)(map, connect(mapStateToProps, mapDispatchToProps))
+  return compose.into(0)(map, _connect(mapStateToProps, mapDispatchToProps))
+}
+
+export default function <Q = {}, P = any>(
+  render: (props: Q) => InfernoChildren,
+  factory: OperatorFactory<StandardAction<P>, any, any>,
+  ...factories: OperatorFactory<StandardAction<P>, any, any>[]
+) {
+  return componentFromStream(
+    render,
+    createActionFactory('PROPS'),
+    factory,
+    ...factories
+  )
 }

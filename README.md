@@ -11,7 +11,7 @@ or [`MOST`](https://www.npmjs.com/package/most).
 # Example
 see the full [example](./example/index.tsx) in this directory.<br/>
 run the example in your browser locally with `"npm run example"`
-or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.4/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/component-from-stream-redux/v0.5.6/example/index.html).
 
 the [example from the `component-from-stream` module](https://npmjs.com/package/component-from-stream) explores how to refactor
 the [original `component-from-stream` example](https://github.com/acdlite/recompose/blob/master/docs/API.md#componentfromstream)
@@ -31,12 +31,10 @@ among which simpler testing and maintainability.
 ## `counter/index.ts`
 the main module of the `counter` component, which essentially wires it up.
 ```ts
-import redux from 'component-from-stream-redux'
-import componentFromStream from '../component-from-stream'
-import connect from '../connect'
+import componentFromEvents, { redux, connect } from '../component-from-events'
 import Counter from '../views/counter'
 import reducer from './reducer'
-import { createEventHandlers, createEventFactory } from 'basic-fsa-factories'
+import { createEventHandlers } from 'basic-fsa-factories'
 import { map, tap } from 'rxjs/operators'
 import compose from 'basic-compose'
 import log from '../console'
@@ -50,21 +48,23 @@ const mapDispatchToProps = createEventHandlers({
   onClickDecrement: 'CLICK_DECREMENT'
 })
 
-export default componentFromStream(
+export default componentFromEvents(
   Counter,
-  createEventFactory('PROPS'),
   redux(reducer),
   () => tap(log('state:')),
   connect(mapStateToProps, mapDispatchToProps),
   () => tap(log('view-props:'))
 )
 ```
-note that only `mapStateToProps` and `mapDispatchToProps` are specific
-to the `counter` component.
-both functions are projections that map the reducer state or dispatcher function
-to view props.
-the rest of the code is generic wiring,
-and could be abstracted into its own module.
+in addition to the `redux` operator factory,
+the `component-from-stream-redux` module also exposes
+a higher-order `connect` factory, very similar in purpose to
+[its source of inspiration from the `react-redux` module](https://github.com/reduxjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options).
+the higher-order factory returns a function which,
+when composed with a `map` operator yields
+an operator factory for the `component-from-stream` factory.<br/>
+see the `component-from-events` module below for the corresponding shorthand
+imported here.
 
 ## `counter/reducer.ts`
 the reducer is the heart of the redux-based component:
@@ -108,31 +108,48 @@ note that when the state is not modified by an event,
 the reducer returns the previous state object
 instead of returning a new object representing the same state.
 since the redux operator does not re-emit the previously emitted state,
-the event is "swallowed":
+the event is effectively ignored:
 the view is only re-rendered when the state changes.
 
-## `connect.ts`
-in addition to the `redux` operator factory used in
-the main module of the `counter` component,
-the `component-from-stream-redux` module also exposes
-a higher-level `connect` factory, very similar in purpose to
-[its source of inspiration from the `react-redux` module](https://github.com/reduxjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options).
-the higher-level factory returns a function which,
-when composed as follows with a `map` operator yields
-an operator factory for the `component-from-stream` factory.
+## `component-from-events.ts`
+the `component-from-events` module exports generic project-level shorthands.
 
-as for the latter, a project-specific module may expose a corresponding shorthand:
+it exposes a shorthand of `component-from-stream`
+with a built-in custom props dispatcher that dispatches `PROPS` events.
+the main module of the `counter` component above imports this shorthand
+as `component-from-events`.
 ```ts
+import componentFromStream, { OperatorFactory, InfernoChildren } from './component-from-stream'
+import { createActionFactory, StandardAction } from 'basic-fsa-factories'
+
+export default function <Q = {}, P = any>(
+  render: (props: Q) => InfernoChildren,
+  factory: OperatorFactory<StandardAction<P>, any, any>,
+  ...factories: OperatorFactory<StandardAction<P>, any, any>[]
+) {
+  return componentFromStream(
+    render,
+    createActionFactory('PROPS'), // custom `PROPS` event dispatcher
+    factory,
+    ...factories
+  )
+}
+```
+it also exposes a shorthand for `connect`,
+which composes it with the [`RxJS`](http://reactivex.io/rxjs/) `map` operator:
+```ts
+import { connect as _connect } from 'component-from-stream-redux'
 import { map } from 'rxjs/operators'
 import compose from 'basic-compose'
 
-export default function <S={},P={}>(
+export function connect <S={},P={}>(
   mapStateToProps: (state: S) => Partial<P>,
   mapDispatchToProps: (dispatch: (...args: any[]) => void) => Partial<P>
 ) {
-  return compose.into(0)(map, connect(mapStateToProps, mapDispatchToProps))
+  return compose.into(0)(map, _connect(mapStateToProps, mapDispatchToProps))
 }
 ```
+
 # <a name="API"></a>API
 the [above example](#Example) provides a brief introduction
 to the `redux` and `connect` functions exposed by this module.
