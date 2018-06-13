@@ -18,7 +18,7 @@ the [original `component-from-stream` example](https://github.com/acdlite/recomp
 from [`recompose`](https://npmjs.com/package/recompose)
 to split view rendering from reactive operator behaviour.
 although it is arguably overkill in this particular example,
-it can be further refactored to implement a redux-like setup
+it can nonetheless be further refactored to implement a redux-like setup
 for the purpose of illustration.
 
 components react to events which alter their internal state
@@ -35,8 +35,7 @@ import componentFromEvents, { redux, connect } from '../component-from-events'
 import Counter from '../views/counter'
 import reducer from './reducer'
 import { createEventHandlers } from 'basic-fsa-factories'
-import { map, tap } from 'rxjs/operators'
-import compose from 'basic-compose'
+import { tap } from 'rxjs/operators'
 import log from '../console'
 
 function mapStateToProps ({ props, count }) {
@@ -49,14 +48,14 @@ const mapDispatchToProps = createEventHandlers({
 })
 
 export default componentFromEvents(
-  Counter,
-  redux(reducer),
+  Counter, // stateless (pure) rendering function
+  redux(reducer), // reduce events to component state
   () => tap(log('state:')),
-  connect(mapStateToProps, mapDispatchToProps),
+  connect(mapStateToProps, mapDispatchToProps), // map state to view props
   () => tap(log('view-props:'))
 )
 ```
-in addition to the `redux` operator factory,
+in addition to the `redux` higher-order operator factory,
 the `component-from-stream-redux` module also exposes
 a higher-order `connect` factory, very similar in purpose to
 [its source of inspiration from the `react-redux` module](https://github.com/reduxjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options).
@@ -117,7 +116,7 @@ the `component-from-events` module exports generic project-level shorthands.
 it exposes a shorthand of `component-from-stream`
 with a built-in custom props dispatcher that dispatches `PROPS` events.
 the main module of the `counter` component above imports this shorthand
-as `component-from-events`.
+as `componentFromEvents`.
 ```ts
 import componentFromStream, { OperatorFactory, InfernoChildren } from './component-from-stream'
 import { createActionFactory, StandardAction } from 'basic-fsa-factories'
@@ -136,7 +135,7 @@ export default function <Q = {}, P = any>(
 }
 ```
 it also exposes a shorthand for `connect`,
-which composes it with the [`RxJS`](http://reactivex.io/rxjs/) `map` operator:
+which composes it with the `map` operator from [`RxJS`](http://reactivex.io/rxjs/):
 ```ts
 import { connect as _connect } from 'component-from-stream-redux'
 import { map } from 'rxjs/operators'
@@ -157,12 +156,13 @@ however, both functions accept additional arguments,
 as specified in the below type declarations:
 * `redux` rest arguments are effects, similar to [`epics`](https://redux-observable.js.org/docs/basics/Epics.html),
 their source of inspiration
-from the [redux-observable](https://npmjs.com/package/redux-observable) module,
-which transform the state and event streams into a stream of events
+from the [redux-observable](https://npmjs.com/package/redux-observable) module.
+effects transform the state and event streams into a stream of events
 that is dispatched back into the reducer.
-as for `epics`, events from the input event stream first hit the reducer
+as with `epics`, events from the input event stream first hit the reducer
 before the effects.
-`epics` are typically meant to handle side-effects external to the component.
+`epics` are typically meant to handle side-effects other than component state,
+e.g. services such as persistence layers, remote APIs, timers, etc.
 * `connect` accepts an optional 3rd argument, `mergeProps`, that defines how to
 merge the output of the `mapStateToProps` and `mapDispatchToProps` functions
 into a new view props object.<br/>
